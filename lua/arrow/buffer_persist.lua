@@ -25,13 +25,19 @@ end
 function M.cache_file_path(filename)
 	local save_path = config.getState("save_path")()
 
-	save_path = save_path:gsub("/$", "")
+	if vim.fn.has("win32") == 1 then
+		save_path = save_path:gsub("/", "\\")
+		save_path = save_path:gsub("\\$", "")
+	else
+		save_path = save_path:gsub("/$", "")
+	end
 
 	if vim.fn.isdirectory(save_path) == 0 then
 		vim.fn.mkdir(save_path, "p")
 	end
 
-	return save_path .. "/" .. save_key(filename)
+	local separator = vim.fn.has("win32") == 1 and "\\" or "/"
+	return save_path .. separator .. save_key(filename)
 end
 
 function M.clear_buffer_ext_marks(bufnr)

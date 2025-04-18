@@ -11,25 +11,61 @@ local function save_key()
 
 	if config.getState("separate_by_branch") then
 		local branch = git.refresh_git_branch()
-
 		if branch then
-			return utils.normalize_path_to_filename(config.getState("save_key_cached") .. "-" .. branch)
+			local key = config.getState("save_key_cached") .. "-" .. branch
+			if vim.fn.has("win32") == 1 then
+				key = key:gsub(":", "")
+				key = key:gsub("\\", "_")
+				key = key:gsub("/", "_")
+			end
+			return utils.normalize_path_to_filename(key)
 		end
 	end
 
-	return utils.normalize_path_to_filename(config.getState("save_key_cached"))
+	local key = config.getState("save_key_cached")
+	if vim.fn.has("win32") == 1 then
+		key = key:gsub(":", "")
+		key = key:gsub("\\", "_")
+		key = key:gsub("/", "_")
+	end
+	return utils.normalize_path_to_filename(key)
 end
+
+-- local function cache_file_path()
+-- 	local save_path = config.getState("save_path")()
+--
+-- 	save_path = save_path:gsub("/$", "")
+--
+-- 	if vim.fn.isdirectory(save_path) == 0 then
+-- 		vim.fn.mkdir(save_path, "p")
+-- 	end
+--
+-- 	return save_path .. "/" .. save_key()
+-- end
 
 local function cache_file_path()
 	local save_path = config.getState("save_path")()
 
-	save_path = save_path:gsub("/$", "")
+	if vim.fn.has("win32") == 1 then
+		save_path = save_path:gsub("/", "\\")
+		save_path = save_path:gsub("\\$", "")
+	else
+		save_path = save_path:gsub("/$", "")
+	end
 
 	if vim.fn.isdirectory(save_path) == 0 then
 		vim.fn.mkdir(save_path, "p")
 	end
 
-	return save_path .. "/" .. save_key()
+	local key = save_key()
+	if vim.fn.has("win32") == 1 then
+		key = key:gsub(":", "")
+		key = key:gsub("\\", "_")
+		key = key:gsub("/", "_")
+	end
+
+	local separator = vim.fn.has("win32") == 1 and "\\" or "/"
+	return save_path .. separator .. key
 end
 
 local function notify()
