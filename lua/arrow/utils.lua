@@ -119,6 +119,12 @@ function M.get_buffer_path(bufnr)
 	local absolute_buffer_path = vim.fn.fnamemodify(bufname, ":p")
 
 	local save_key = config.getState("save_key_cached") or config.getState("save_key")()
+
+	if vim.fn.has("win32") == 1 then
+		absolute_buffer_path = absolute_buffer_path:gsub("\\", "/")
+		save_key = save_key:gsub("\\", "/")
+	end
+
 	local escaped_save_key = save_key:gsub("[%(%)%.%%%+%-%*%?%[%]%^%$]", "%%%1")
 
 	if absolute_buffer_path:find("^" .. escaped_save_key .. "/") then
